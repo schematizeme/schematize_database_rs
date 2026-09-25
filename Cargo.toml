@@ -1,0 +1,53 @@
+[package]
+name = "schematize-database"
+version = "0.1.0"
+edition = "2021"
+description = "schematize Database: modela o schema, lê o banco que já existe, e gera o SQL e a migration expand-contract. O desenho do banco antes da primeira linha de aplicação."
+license = "MIT"
+
+[lib]
+name = "database"
+path = "src/lib.rs"
+
+[[bin]]
+name = "schematize-database"
+path = "src/main.rs"
+
+[dependencies]
+clap = { version = "4", features = ["derive"] }
+# O `Schema` atravessa a fronteira para a janela como JSON, e a janela o devolve editado.
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+# Encoder PNG — gera o ícone do app A PARTIR DO CÓDIGO, sem asset externo nem rasterizador
+# (que falha em SVG). Mesma escolha dos irmãos.
+png = "0.18"
+# Introspecção de SQLite. Postgres NÃO entra como crate: ele é lido pelo `psql` do PATH,
+# porque uma dependência de driver Postgres puxa TLS e mais 40 crates para um caminho que a
+# maioria de quem usa este app nunca exercita. O custo dessa escolha é um parser de saída de
+# `psql`, e ele tem teste — ver `parse_psql_row`.
+rusqlite = { version = "0.31", default-features = false }
+
+# Só para devolver o SIGPIPE ao padrão do Unix — ver a nota em `main.rs`.
+[dev-dependencies]
+# Os testes de contrato leem o `stdout` do binário e PARSEIAM o JSON com um parser estrito — se
+# o documento tiver vírgula sobrando ou aspa não escapada, o teste reprova em vez de aceitar.
+# Um teste que casasse substring aprovaria JSON quebrado.
+serde_json = "1"
+
+[target.'cfg(unix)'.dependencies]
+libc = "0.2"
+
+[features]
+# Espelha as do `schematize_cli_rs`, pela mesma razão: `sqlite-embutido` (default) compila o
+# SQLite dentro do binário, que é o que os RELEASES publicados usam — binário que roda em
+# qualquer distro sem depender da libsqlite3 de quem baixou. `sqlite-do-sistema` linka a da
+# distro, e é o certo para quem constrói do fonte na própria máquina; o `install.sh` detecta
+# (`pkg-config --exists sqlite3`) e escolhe sozinho.
+default = ["sqlite-embutido"]
+sqlite-embutido = ["rusqlite/bundled"]
+sqlite-do-sistema = []
+
+[profile.release]
+strip = true
+opt-level = 3
+lto = "thin"
