@@ -3,6 +3,7 @@
 //! **Onde:** `main`. O domínio está em [`database::dominio`]; aqui é só entrada e saída.
 
 pub mod args;
+pub mod desktop;
 pub mod fonte;
 pub mod saidajson;
 
@@ -55,5 +56,6 @@ pub fn executar(cmd: Cmd) -> Result<(), String> {
             }
             Ok(())
         }
+        Cmd::Desktop { install, remover } => desktop::executar(install, remover),
     }
 }

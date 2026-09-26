@@ -248,12 +248,15 @@ fn main() -> Result<(), slint::PlatformError> {
     // exatamente este defeito: o `cmd_out` cortava no timeout e devolvia a primeira linha do log
     // de ambiente como se fosse o número.
     if std::env::args().skip(1).any(|a| a == "--version" || a == "-V") {
-        println!("schematize-database-gui {}", env!("CARGO_PKG_VERSION"));
+        println!("schematize-database-gui {}", database::nucleo::procedencia::rotulo_versao());
         return Ok(());
     }
 
     let w = MainWindow::new()?;
-    w.set_versao(format!("schematize-database-gui {}", env!("CARGO_PKG_VERSION")).into());
+    w.set_versao(
+        format!("schematize-database-gui {}", database::nucleo::procedencia::rotulo_versao())
+            .into(),
+    );
 
     // Fonte vinda da linha de comando — é assim que o hub delega a aba já sabendo o banco.
     let inicial = fonte_dos_args(&std::env::args().skip(1).collect::<Vec<_>>());
@@ -443,6 +446,29 @@ mod tests {
         assert_eq!(a.last().unwrap(), "--json");
     }
 
+    /// **A janela reporta a versão COM a procedência, como o CLI.**
+    ///
+    /// Medido lado a lado em uso: o CLI dizia `0.1.0 (3daf4991)` e a janela dizia `0.1.0`
+    /// seco. O número sozinho não distingue dois binários com o mesmo `Cargo.toml` e
+    /// comportamento diferente — e neste ecossistema isso não é hipótese: um binário de 15
+    /// dias atrás passou por novo e gravou o `.desktop` errado, justamente porque a versão
+    /// batia. Quem pergunta a versão de uma janela está quase sempre investigando isso.
+    #[test]
+    fn a_janela_reporta_a_procedencia_e_nao_so_o_numero() {
+        let fonte = include_str!("main.rs");
+        let producao = fonte.split("#[cfg(test)]").next().expect("há código antes dos testes");
+        assert!(
+            !producao.contains("env!(\"CARGO_PKG_VERSION\")"),
+            "a janela usou o número seco — use `procedencia::rotulo_versao()`, que carrega o SHA"
+        );
+        assert_eq!(
+            producao.matches("procedencia::rotulo_versao()").count(),
+            2,
+            "são DOIS lugares: o `--version` e o rótulo dentro da janela. Divergir faria a \
+             janela aberta e a pergunta pela linha de comando responderem coisas diferentes"
+        );
+    }
+
     /// **A casca não sabe NADA do domínio** (D4 do ADR-0016).
     ///
     /// Ela mora no mesmo repo do CLI (ADR-0020), e isso é conveniência de distribuição — não
@@ -458,6 +484,16 @@ mod tests {
              do crate a faria embutir uma versão — o bug que fez a janela irmã abrir a versão \
              antiga"
         );
+        // **`nucleo::` é permitido e `dominio::` não é, e a distinção não é de nome.**
+        //
+        // A janela chama `nucleo::procedencia::rotulo_versao()` para dizer de qual COMMIT ela
+        // é. Isso é plataforma: lê duas variáveis gravadas no build e não pergunta nada sobre
+        // schema. Medido depois da mudança: o binário cresceu **1.952 bytes** e continua com
+        // **zero** símbolos `sqlite3_*` — o linker descarta o domínio, porque nada o chama.
+        //
+        // O que o ADR-0020 proíbe é a janela LER o domínio em vez de perguntar ao binário. Um
+        // `use database::dominio` faria a versão do schema vir de dentro dela, e aí ela
+        // desenharia o que ELA entende por schema, não o que o binário instalado entende.
         // **O varredor ignora COMENTÁRIO, e isso foi aprendido errando.**
         //
         // A primeira versão procurava `Command::new` no arquivo inteiro e reprovou — por causa

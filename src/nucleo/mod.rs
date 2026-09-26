@@ -9,4 +9,7 @@
 //! linhas. O duplicado aqui não sabe **nada** do negócio — se um dia algo de domínio migrar para
 //! esta pasta, o corte foi feito errado.
 
+pub mod bin;
+pub mod desktop;
+pub mod icone;
 pub mod procedencia;
