@@ -36,6 +36,12 @@ fn main() {
 
     println!("cargo:rustc-env=SCHEMATIZE_GIT_SHA={sha}");
 
+    // A JANELA (ADR-0020): ela mora neste repo, como segundo binário. Compilar o `.slint` aqui
+    // é o que permite isso — e mantém o arquivo como arquivo de verdade (LSP do Slint, diff
+    // limpo), em vez de uma string dentro do Rust.
+    slint_build::compile("ui/database.slint").expect("falha ao compilar ui/database.slint");
+    println!("cargo:rerun-if-changed=ui/database.slint");
+
     // Sem isto o valor congela no primeiro build e a versão passa a MENTIR — que é o bug que
     // este arquivo existe para matar. `.git/HEAD` muda a cada checkout/commit; o `refs/heads`
     // cobre o commit na mesma branch.

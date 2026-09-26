@@ -13,6 +13,17 @@ path = "src/lib.rs"
 name = "schematize-database"
 path = "src/main.rs"
 
+# A JANELA, no MESMO repo (ADR-0020). Os dois binários saem do mesmo commit, sempre — o que
+# elimina por construção as três falhas que o repo separado custou: o `git clone` do release
+# apontando para um 404 em silêncio, o pino cruzado envelhecendo sozinho, e o CI da janela
+# compilando contra uma versão do CLI diferente da do release.
+#
+# Estar junto NÃO é permissão para acoplar: a janela fala com o BINÁRIO por `--json`, nunca com
+# o crate, e há teste lendo o próprio fonte para cobrar isso.
+[[bin]]
+name = "schematize-database-gui"
+path = "src/gui/main.rs"
+
 [dependencies]
 clap = { version = "4", features = ["derive"] }
 # O `Schema` atravessa a fronteira para a janela como JSON, e a janela o devolve editado.
@@ -26,8 +37,20 @@ png = "0.18"
 # maioria de quem usa este app nunca exercita. O custo dessa escolha é um parser de saída de
 # `psql`, e ele tem teste — ver `parse_psql_row`.
 rusqlite = { version = "0.31", default-features = false }
+# Toolkit da JANELA. Mesmo backend das irmãs: winit cobre Wayland E X11, renderer femtovg, sem
+# skia (que exigiria cmake). Só o binário `-gui` o usa.
+slint = { version = "1.17", default-features = false, features = [
+    "std",
+    "compat-1-2",
+    "backend-winit",
+    "renderer-femtovg",
+    "accessibility",
+] }
 
 # Só para devolver o SIGPIPE ao padrão do Unix — ver a nota em `main.rs`.
+[build-dependencies]
+slint-build = "1.17"
+
 [dev-dependencies]
 # Os testes de contrato leem o `stdout` do binário e PARSEIAM o JSON com um parser estrito — se
 # o documento tiver vírgula sobrando ou aspa não escapada, o teste reprova em vez de aceitar.
