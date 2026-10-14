@@ -52,6 +52,7 @@ fn main() {
     // A JANELA (ADR-0020): ela mora neste repo, como segundo binário. Compilar o `.slint` aqui
     // é o que permite isso — e mantém o arquivo como arquivo de verdade (LSP do Slint, diff
     // limpo), em vez de uma string dentro do Rust.
+    #[cfg(feature = "gui")]
     slint_build::compile("ui/database.slint").expect("falha ao compilar ui/database.slint");
     println!("cargo:rerun-if-changed=ui/database.slint");
 

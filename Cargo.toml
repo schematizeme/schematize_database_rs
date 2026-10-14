@@ -23,6 +23,9 @@ path = "src/main.rs"
 [[bin]]
 name = "schematize-database-gui"
 path = "src/gui/main.rs"
+# A janela só existe com a feature `gui` (default). Sem ela (CLI puro, ex.: FreeBSD) o bin some
+# do build e o Slint nem entra no grafo.
+required-features = ["gui"]
 
 [dependencies]
 clap = { version = "4", features = ["derive"] }
@@ -39,7 +42,7 @@ png = "0.18"
 rusqlite = { version = "0.31", default-features = false }
 # Toolkit da JANELA. Mesmo backend das irmãs: winit cobre Wayland E X11, renderer femtovg, sem
 # skia (que exigiria cmake). Só o binário `-gui` o usa.
-slint = { version = "1.17", default-features = false, features = [
+slint = { optional = true, version = "1.17", default-features = false, features = [
     "std",
     "compat-1-2",
     "backend-winit",
@@ -49,7 +52,7 @@ slint = { version = "1.17", default-features = false, features = [
 
 # Só para devolver o SIGPIPE ao padrão do Unix — ver a nota em `main.rs`.
 [build-dependencies]
-slint-build = "1.17"
+slint-build = { version = "1.17", optional = true }
 
 [dev-dependencies]
 # Os testes de contrato leem o `stdout` do binário e PARSEIAM o JSON com um parser estrito — se
@@ -66,7 +69,9 @@ libc = "0.2"
 # qualquer distro sem depender da libsqlite3 de quem baixou. `sqlite-do-sistema` linka a da
 # distro, e é o certo para quem constrói do fonte na própria máquina; o `install.sh` detecta
 # (`pkg-config --exists sqlite3`) e escolhe sozinho.
-default = ["sqlite-embutido"]
+default = ["sqlite-embutido", "gui"]
+# Janela (Slint). Desligue com `--no-default-features` para um CLI sem toolkit gráfico.
+gui = ["dep:slint", "dep:slint-build"]
 sqlite-embutido = ["rusqlite/bundled"]
 sqlite-do-sistema = []
 
