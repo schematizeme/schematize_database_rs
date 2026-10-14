@@ -1,6 +1,6 @@
 [package]
 name = "schematize-database"
-version = "0.1.4"
+version = "0.1.5"
 edition = "2021"
 description = "schematize Database: modela o schema, lê o banco que já existe, e gera o SQL e a migration expand-contract. O desenho do banco antes da primeira linha de aplicação."
 license = "MIT"
@@ -28,6 +28,8 @@ path = "src/gui/main.rs"
 required-features = ["gui"]
 
 [dependencies]
+# TEMP(ADR-0026): trocar por git = "https://github.com/schematizeme/schematize_plataforma_rs", tag = "v0.2.0" ao publicar
+schematize_plataforma = { path = "../schematize_plataforma_rs", default-features = false, features = ["parasita","base"] }
 clap = { version = "4", features = ["derive"] }
 # O `Schema` atravessa a fronteira para a janela como JSON, e a janela o devolve editado.
 serde = { version = "1", features = ["derive"] }

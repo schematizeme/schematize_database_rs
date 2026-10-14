@@ -4,13 +4,13 @@
 //!
 //! **Onde:** `main` e os subcomandos.
 //!
-//! **Por que é copiada e não uma lib comum (D4 do ADR-0016):** uma `commons` de domínio é vetada
-//! pelo piso 6, e uma de plataforma amarraria a versão de sete repos por causa de duzentas
-//! linhas. O duplicado aqui não sabe **nada** do negócio — se um dia algo de domínio migrar para
-//! esta pasta, o corte foi feito errado.
+//! **Por que é fina (ADR-0026):** o que é plataforma de verdade (market parasita, procedência,
+//! `home`/`resolve_bin`) vive em `schematize_plataforma`; aqui ficam só `desktop`/`icone` e a
+//! cola com o `build.rs` deste repo. Nada de domínio entra nesta pasta (piso 6).
 
-pub mod bin;
 pub mod desktop;
 pub mod icone;
-pub mod market_parasita;
 pub mod procedencia;
+
+/// `home`/`resolve_bin` vivem na lib compartilhada; o alias mantém `nucleo::bin::...` nos chamadores.
+pub use schematize_plataforma::bin;
