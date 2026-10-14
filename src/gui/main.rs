@@ -252,6 +252,11 @@ fn main() -> Result<(), slint::PlatformError> {
         return Ok(());
     }
 
+    // O gestor de atualizações viaja com todo programa da casa — antes de abrir a janela.
+    database::nucleo::market_parasita::garantir_no_inicio(
+        &std::env::args().skip(1).collect::<Vec<_>>(),
+    );
+
     let w = MainWindow::new()?;
     w.set_versao(
         format!("schematize-database-gui {}", database::nucleo::procedencia::rotulo_versao())

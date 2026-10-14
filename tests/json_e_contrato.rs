@@ -36,7 +36,11 @@ fn banco(nome: &str) -> std::path::PathBuf {
 
 /// Roda o binário e devolve `(stdout, stderr, sucesso)`.
 fn rodar(args: &[&str]) -> (String, String, bool) {
-    let o = Command::new(BIN).args(args).output().expect("rodar o binário");
+    let o = Command::new(BIN)
+        .env("SCHEMATIZE_SEM_MARKET", "1")
+        .args(args)
+        .output()
+        .expect("rodar o binário");
     (
         String::from_utf8_lossy(&o.stdout).to_string(),
         String::from_utf8_lossy(&o.stderr).to_string(),
