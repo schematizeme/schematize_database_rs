@@ -1,6 +1,6 @@
 [package]
 name = "schematize-database"
-version = "0.1.2"
+version = "0.1.3"
 edition = "2021"
 description = "schematize Database: modela o schema, lê o banco que já existe, e gera o SQL e a migration expand-contract. O desenho do banco antes da primeira linha de aplicação."
 license = "MIT"
